@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>VATBoard</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="resources/vatboard.css">
+
+    </head>
+    <body>
+        <table id="tableHeader" width=100% style="margin-bottom:20px;">
+            <tr>
+                <td width="15%" style="text-align:left;padding-left: 40px;padding-top:10px;">
+                    <img id ="dep-icon" src="resources/dep-icon.png" width="70" alt="dep" style="margin-right:30px;">
+                    <img id ="arr-icon" src="resources/arr-icon.png" width="70" alt="arr">
+                </td>
+                <td width="15%" style="text-align:left;padding-left: 40px;padding-top:10px;">
+                    <p>Arrivals:<span style="margin-left:5px;" id="arrcount"></span> </p><p>Departures:<span id="depcount" style="margin-left:5px;"></span></p>
+                </td>
+                <td width="33%" id ="vattitle">
+                    VATBoard
+                </td>
+                <td width="33%">
+                </td>
+            </tr>
+        </table>
+        <table id="table" 
+               class="table-sm table-dark table-striped table-borderless"
+               data-show-pagination-switch="false"
+               data-pagination="false"
+               data-height ="380"
+               data-virtual-scroll ="true"
+               data-only-info-pagination="true"
+               data-pagination-loop="false">
+            <thead>
+                <tr>
+                    <th data-field="callsign">Callsign</th>
+                    <th data-field="planned_depairport">Origin</th>
+                    <th data-field="planned_destairport">Destination</th>
+                    <th data-field="planned_aircraft">Aircraft</th>
+                    <th data-field="altitude">Altitude</th>
+                    <th data-field="groundspeed">GS</th>
+                </tr>
+            </thead>
+        </table>
+        <script src="resources/jquery-3.5.0.min.js"></script>
+        <script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+        <script>
+            $(function () {
+                var vatsimdata = [];
+                var currentMode = '';
+                var arrivals = 0;
+                var departures = 0;
+                var rateArrivals = 0;
+                var rateDepartures = 0;
+                var $table = $('#table');
+                var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
+                getData();
+                setInterval(getData, 120000);
+
+                function getData() {
+                    $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
+                        vatsimdata = d;
+                        postgetData(d);
+                    });
+                }
+                function postgetData(d) {
+                    $table.bootstrapTable({
+                        data: d,
+                        theadClasses: 'thead-dark'
+                    });
+                    prepareCounters(d);
+                    updateCounters(d);
+                    $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
+                    filterArrivals();
+                    animateScroll();
+                    setTimeout(function () {
+                        filterDepartures();
+                    }, rateArrivals + 2000);
+                    animateScroll();
+                }
+                function getUrlParam(parameter, defaultvalue) {
+                    var urlparameter = defaultvalue;
+                    if (window.location.href.indexOf(parameter) > -1) {
+                        urlparameter = getUrlVars()[parameter];
+                    }
+                    return urlparameter;
+                }
+                function getUrlVars() {
+                    var vars = {};
+                    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+                        vars[key] = value;
+                    });
+                    return vars;
+                }
+                function filterArrivals() {
+                    currentMode = 'arr';
+                    $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
+                    $('#dep-icon').attr('src', 'resources/dep-icon.png');
+                    $('#table').bootstrapTable('filterBy', {
+                        planned_destairport: icao_url
+                    });
+                }
+                function filterDepartures() {
+                    currentMode = 'dep';
+                    $('#arr-icon').attr('src', 'resources/arr-icon.png');
+                    $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
+                    $('#table').bootstrapTable('filterBy', {
+                        planned_depairport: icao_url
+                    });
+                }
+                function updateCounters(d) {
+                    $('#arrcount').text(arrivals);
+                    $('#depcount').text(departures);
+                }
+                function prepareCounters(d) {
+                    arrivals = d.filter(v => v.planned_destairport === icao_url).length;
+                    departures = d.filter(v => v.planned_depairport === icao_url).length;
+                    rateArrivals = arrivals * 1000;
+                    rateDepartures = departures * 1000;
+                }
+                function animateScroll() {
+                    var rate = (currentMode === 'arr') ? rateArrivals : rateDepartures;
+                    $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, rate, 'linear');
+                    $('.fixed-table-body').animate({scrollTop: 0}, 100, 'linear');
+                }
+                $("#arr-icon").click(function () {
+                    filterArrivals();
+                });
+                $("#dep-icon").click(function () {
+                    filterDepartures();
+                });
+                $('#vattitle').click(function () {
+                    if ($(".fixed-table-body").is(':animated')) {
+                        $('.fixed-table-body').stop(true, true);
+                    } else {
+                        animateScroll();
+                    }
+
+                });
+            });
+        </script>
+    </body>
+</html>
