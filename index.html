@@ -22,7 +22,7 @@
                 <td width="33%" id ="vattitle">
                     VATBoard
                 </td>
-                <td width="33%">
+                <td id="appinfo" width="33%">
                 </td>
             </tr>
         </table>
@@ -68,6 +68,9 @@
                     $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
                         vatsimdata = d;
                         postgetData(d);
+                    });
+                    $.getJSON('getversion.php', function (ver) {
+                        $('#appinfo').text(ver);
                     });
                 }
                 function postgetData(d) {

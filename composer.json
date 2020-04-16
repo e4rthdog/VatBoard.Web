@@ -1,5 +1,6 @@
 {
     "require": {
-        "skymeyer/vatsimphp": "1.0"
+        "skymeyer/vatsimphp": "1.0",
+        "cpliakas/git-wrapper": "^3.0"
     }
 }
