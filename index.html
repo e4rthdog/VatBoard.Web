@@ -36,14 +36,14 @@
                data-pagination-loop="false">
             <thead>
                 <tr>
-                    <th data-field="callsign" class="vat-center">Callsign</th>
+                    <th data-field="callsign" data-formatter="logoFormatter" class="vat-center">Callsign</th>
                     <th data-field="planned_depairport" class="vat-center">Origin</th>
                     <th data-field="planned_destairport" class="vat-center">Destination</th>
                     <th data-field="planned_aircraft" class="vat-center">Aircraft</th>
                     <th data-field="altitude" class="vat-right">Altitude</th>
                     <th data-field="groundspeed" class="vat-right">GS</th>
-                    <th data-field="dest_distance" class="vat-right">NM/Dest.</th>
-                    <th data-field="ETA" class="vat-center" data-cell-style="progressBar">ETA</th>
+                    <th data-field="dest_distance" class="vat-right">Distance</th>
+                    <th data-field="ETA" class="vat-center">ETA</th>
                 </tr>
             </thead>
         </table>
@@ -52,6 +52,10 @@
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
         <script>
+            function logoFormatter(value, row, index) {
+                var airline = value.trim().substring(0, 3);
+                return '<img alt="" width=24px src="https://e1.flightcdn.com/images/airline_logos/24px/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
+            }
             $(function () {
                 var vatsimdata = [];
                 var currentMode = '';
@@ -148,10 +152,6 @@
                     }
 
                 });
-                
-                function progressBar(value, row, index){
-                    
-                }
             });
         </script>
     </body>
