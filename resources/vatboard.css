@@ -11,6 +11,9 @@
 .vat-center{
     text-align: center;
 }
+.vat-right{
+    text-align: right;
+}
 td#vattitle {
     font-size: x-large;
 }
