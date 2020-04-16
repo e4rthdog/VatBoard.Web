@@ -37,8 +37,9 @@
             <thead>
                 <tr>
                     <th data-field="callsign" data-formatter="logoFormatter" class="vat-center">Callsign</th>
-                    <th data-field="planned_depairport" class="vat-center">Origin</th>
-                    <th data-field="planned_destairport" class="vat-center">Destination</th>
+                    <th data-field="planned_depairport" data-formatter = "airportsFormatter" class="vat-center">Departure/Destination</th>
+                    <!--                    <th data-field="planned_depairport" class="vat-center">Origin</th>
+                                        <th data-field="planned_destairport" class="vat-center">Destination</th>-->
                     <th data-field="planned_aircraft" class="vat-center">Aircraft</th>
                     <th data-field="altitude" class="vat-right">Altitude</th>
                     <th data-field="groundspeed" class="vat-right">GS</th>
@@ -55,6 +56,9 @@
             function logoFormatter(value, row, index) {
                 var airline = value.trim().substring(0, 3);
                 return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
+            }
+            function airportsFormatter(value, row, index) {
+                return value + " ==> " + row.planned_destairport;
             }
             $(function () {
                 var vatsimdata = [];
