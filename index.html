@@ -43,7 +43,7 @@
                     <th data-field="altitude" class="vat-right">Altitude</th>
                     <th data-field="groundspeed" class="vat-right">GS</th>
                     <th data-field="dest_distance" class="vat-right">NM/Dest.</th>
-                    <th data-field="ETA" class="vat-center">ETA</th>
+                    <th data-field="ETA" class="vat-center" data-cell-style="progressBar">ETA</th>
                 </tr>
             </thead>
         </table>
@@ -68,6 +68,7 @@
                     $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
                         vatsimdata = d;
                         postgetData(d);
+                        console.log(d);
                     });
                     $.getJSON('getversion.php', function (ver) {
                         $('#appinfo').text(ver);
@@ -78,6 +79,7 @@
                         data: d,
                         theadClasses: 'thead-dark'
                     });
+                    $table.bootstrapTable('load', d);
                     prepareCounters(d);
                     updateCounters(d);
                     $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
@@ -147,6 +149,10 @@
                     }
 
                 });
+                
+                function progressBar(value, row, index){
+                    
+                }
             });
         </script>
     </body>
