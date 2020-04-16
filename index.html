@@ -68,7 +68,6 @@
                     $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
                         vatsimdata = d;
                         postgetData(d);
-                        console.log(d);
                     });
                     $.getJSON('getversion.php', function (ver) {
                         $('#appinfo').text(ver);
