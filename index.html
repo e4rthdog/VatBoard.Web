@@ -137,7 +137,7 @@
                 function animateScroll() {
                     var rate = (currentMode === 'arr') ? rateArrivals : rateDepartures;
                     $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, rate, 'linear');
-                    $('.fixed-table-body').animate({scrollTop: 0}, 100, 'linear');
+                    $('.fixed-table-body').animate({scrollTop: 0}, rate 'linear');
                 }
                 $("#arr-icon").click(function () {
                     filterArrivals();
