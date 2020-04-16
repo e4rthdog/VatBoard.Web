@@ -1,5 +1,7 @@
 <?php
+
 use GitWrapper\GitWrapper;
+
 require_once 'vendor/autoload.php';
 require_once 'utils.php';
 
@@ -37,13 +39,6 @@ if ($vatsim->loadData()) {
                 $minutesToDest = 0;
                 $pilot["ETA"] = "00:00";
             }
-            //Replace ETA with Status
-            if ($pilot["groundspeed"] < 30 and $pilot["dest_distance"] > 10) {
-                $pilot["ETA"] = "DEPARTING";
-            }
-            if ($pilot["groundspeed"] < 30 and $pilot["dest_distance"] < 10) {
-                $pilot["ETA"] = "ARRIVED";
-            }
             $pilot["minutesToDest"] = $minutesToDest;
         } else {
             $pilot["dest_elevation"] = 0;
@@ -73,6 +68,13 @@ if ($vatsim->loadData()) {
             $pilot["dep_lat"] = 0;
             $pilot["dep_lon"] = 0;
             $pilot["dep_distance"] = 0;
+        }
+        //Replace ETA with Status
+        if ($pilot["groundspeed"] < 40 and $pilot["dep_distance"] < 10) {
+            $pilot["ETA"] = "DEPARTING";
+        }
+        if ($pilot["groundspeed"] < 40 and $pilot["dest_distance"] < 10) {
+            $pilot["ETA"] = "ARRIVED";
         }
         $pilot["altitude"] = number_format($pilot["altitude"], 0, ",", ".");
         array_push($result, $pilot);
