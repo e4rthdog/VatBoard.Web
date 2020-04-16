@@ -18,30 +18,30 @@ if ($vatsim->loadData()) {
         //Destination airport data
         $airport = getAirportData($pilot["planned_destairport"]);
         if ($airport) {
-            $pilot["dest_elevation"] = $airport["elevation"];
+            $pilot["dest_elevation"] = number_format($airport["elevation"], 0, ",", ".");
             $pilot["dest_name"] = $airport["name"];
             $pilot["dest_lat"] = $airport["lat"];
             $pilot["dest_lon"] = $airport["lon"];
-            $pilot["dest_distance"] = (int)distance(
-                    $pilot["latitude"],
-                    $pilot["longitude"],
-                    $airport["lat"],
-                    $airport["lon"],
-                    "N"
-            );
+            $pilot["dest_distance"] = number_format((int) distance(
+                            $pilot["latitude"],
+                            $pilot["longitude"],
+                            $airport["lat"],
+                            $airport["lon"],
+                            "N"
+                    ), 0, ",", ".");
             $date_utc = new \DateTime("now", new \DateTimeZone("UTC"));
             if ((int) $pilot["groundspeed"] <> 0) {
-                $minutesToDest = (int)((int) $pilot["dest_distance"] / (int) $pilot["groundspeed"]) * 60;
-                $pilot["ETA"] = $date_utc->modify("+" . (int)$minutesToDest . " minutes")->format("H:i");
+                $minutesToDest = (int) ((int) $pilot["dest_distance"] / (int) $pilot["groundspeed"]) * 60;
+                $pilot["ETA"] = $date_utc->modify("+" . (int) $minutesToDest . " minutes")->format("H:i");
             } else {
                 $minutesToDest = 0;
                 $pilot["ETA"] = "00:00";
             }
             //Replace ETA with Status
-            if($pilot["groundspeed"] < 30 and $pilot["dest_distance"] > 10 ){
+            if ($pilot["groundspeed"] < 30 and $pilot["dest_distance"] > 10) {
                 $pilot["ETA"] = "DEPARTING";
             }
-            if($pilot["groundspeed"] < 30 and $pilot["dest_distance"] < 10 ){
+            if ($pilot["groundspeed"] < 30 and $pilot["dest_distance"] < 10) {
                 $pilot["ETA"] = "ARRIVED";
             }
             $pilot["minutesToDest"] = $minutesToDest;
@@ -56,17 +56,17 @@ if ($vatsim->loadData()) {
         //Departure airport data
         $airport = getAirportData($pilot["planned_depairport"]);
         if ($airport) {
-            $pilot["dep_elevation"] = $airport["elevation"];
+            $pilot["dep_elevation"] = number_format($airport["elevation"], 0, ",", ".");
             $pilot["dep_name"] = $airport["name"];
             $pilot["dep_lat"] = $airport["lat"];
             $pilot["dep_lon"] = $airport["lon"];
-            $pilot["dep_distance"] = (int)distance(
-                    $pilot["latitude"],
-                    $pilot["longitude"],
-                    $airport["lat"],
-                    $airport["lon"],
-                    "N"
-            );
+            $pilot["dep_distance"] = number_format((int) distance(
+                            $pilot["latitude"],
+                            $pilot["longitude"],
+                            $airport["lat"],
+                            $airport["lon"],
+                            "N"
+                    ), 0, ",", ".");
         } else {
             $pilot["dep_elevation"] = 0;
             $pilot["dep_name"] = "N/A";
@@ -74,6 +74,7 @@ if ($vatsim->loadData()) {
             $pilot["dep_lon"] = 0;
             $pilot["dep_distance"] = 0;
         }
+        $pilot["altitude"] = number_format($pilot["altitude"], 0, ",", ".");
         array_push($result, $pilot);
     }
     header('Content-Type: application/json');

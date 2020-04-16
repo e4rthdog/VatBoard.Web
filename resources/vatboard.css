@@ -5,8 +5,12 @@
 
 #tableHeader td {
     text-align: center;
+    vertical-align: middle;
 }
 
+.vat-center{
+    text-align: center;
+}
 td#vattitle {
     font-size: x-large;
 }
