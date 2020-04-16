@@ -66,7 +66,7 @@
                 var $table = $('#table');
                 var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
                 getData();
-                setInterval(getData, 120000);
+                var primaryTimer = setInterval(getData, 70000);
 
                 function getData() {
                     $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
@@ -78,6 +78,7 @@
                     });
                 }
                 function postgetData(d) {
+                    $('.fixed-table-body').stop(true, true);
                     $table.bootstrapTable({
                         data: d,
                         theadClasses: 'thead-dark'
@@ -90,7 +91,7 @@
                     animateScroll();
                     setTimeout(function () {
                         filterDepartures();
-                    }, rateArrivals + 2000);
+                    }, 30000);
                     animateScroll();
                 }
                 function getUrlParam(parameter, defaultvalue) {
