@@ -2,12 +2,10 @@
     background-color: #343a40;
     color: #fff;
 }
-
 #tableHeader td {
     text-align: center;
     vertical-align: middle;
 }
-
 .vat-center{
     text-align: center;
 }
@@ -17,11 +15,9 @@
 td#vattitle {
     font-size: x-large;
 }
-
 .fixed-table-border, .fixed-table-container {
     border: none !important;
 }
-
 #appinfo {
     font-size: 0.7em;
 }
