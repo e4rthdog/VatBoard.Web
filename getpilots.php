@@ -33,7 +33,7 @@ if ($vatsim->loadData()) {
                     ), 0, ",", ".");
             $date_utc = new \DateTime("now", new \DateTimeZone("UTC"));
             if ((int) $pilot["groundspeed"] <> 0) {
-                $minutesToDest = (int) (intval(str_replace('.','',$pilot["dest_distance"])) / (int) $pilot["groundspeed"]) * 60;
+                $minutesToDest = (intval(str_replace('.', '', $pilot["dest_distance"])) / (int) $pilot["groundspeed"]) * 60;
                 $pilot["ETA"] = $date_utc->modify("+" . (int) $minutesToDest . " minutes")->format("H:i");
             } else {
                 $minutesToDest = 0;
@@ -70,10 +70,10 @@ if ($vatsim->loadData()) {
             $pilot["dep_distance"] = 0;
         }
         //Replace ETA with Status
-        if ($pilot["groundspeed"] < 40 and intval(str_replace('.','',$pilot["dep_distance"])) < 10) {
+        if ($pilot["groundspeed"] < 40 and intval(str_replace('.', '', $pilot["dep_distance"])) < 10) {
             $pilot["ETA"] = "DEPARTING";
         }
-        if ($pilot["groundspeed"] < 40 and intval(str_replace('.','',$pilot["dest_distance"])) < 10) {
+        if ($pilot["groundspeed"] < 40 and intval(str_replace('.', '', $pilot["dest_distance"])) < 10) {
             $pilot["ETA"] = "ARRIVED";
         }
         $pilot["altitude"] = number_format($pilot["altitude"], 0, ",", ".");
