@@ -113,7 +113,7 @@
                                 var timerFadeout;
                                 var $table = $('#table');
                                 var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
-                                var mode_url = getUrlParam('mode', 'SCROLL').toUpperCase();
+                                var mode = true;
                                 //
                                 //MAIN
                                 //
@@ -172,10 +172,12 @@
                                 $('#toggleMode').change(function () {
                                     if ($('#toggleMode').prop('checked') === true) {
                                         stopfadeoutFirst();
-                                        animateScroll();
+                                        mode = true;
+                                        determineMode();
                                     } else {
                                         stopanimateScroll();
-                                        fadeoutFirst();
+                                        mode = false;
+                                        determineMode();
                                     }
                                     $('.fixed-table-body').scrollTop(0);
                                 });
@@ -188,7 +190,7 @@
                                 }
                                 function determineMode() {
                                     if (needAnimation === true) {
-                                        if (mode_url === "SCROLL") {
+                                        if (mode === true) {
                                             animateScroll();
                                         } else {
                                             fadeoutFirst();
@@ -243,10 +245,10 @@
                                         $('#table tbody tr:first').fadeOut(1000, function () {
                                             $(this).remove();
                                             if ($('#table tbody tr').length <= 10) {
-                                                clearTimeout(timerFadeout);
+                                                stopfadeoutFirst();
                                             }
                                         });
-                                    }, 1000);
+                                    }, 2500);
                                 }
                                 function stopfadeoutFirst() {
                                     clearTimeout(timerFadeout);
@@ -284,13 +286,6 @@
                                 });
                                 $("#dep-icon").click(function () {
                                     filterDepartures();
-                                });
-                                $('#vattitle').click(function () {
-                                    if ($(".fixed-table-body").is(':animated')) {
-                                        $('.fixed-table-body').stop(true, true);
-                                    } else {
-                                        determineMode();
-                                    }
                                 });
                             });
         </script>
