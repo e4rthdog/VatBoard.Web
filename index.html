@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.css">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
         <link rel="stylesheet" href="resources/vatboard.css">
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-43943268-2"></script>
@@ -20,23 +21,43 @@
         </script>
     </head>
     <body>
-        <div>
-            <table id="tableHeader" width=100% style="margin-bottom:20px;">
-                <tr>
-                    <td width="25%" style="text-align:left;padding-left: 40px;padding-top:10px;">
+        <div style="margin-top:15px;" class="container-fluid">
+            <div class="row">
+                <div class="col-2">
+                    <div class="container-fluid">
                         <img id ="dep-icon" src="resources/dep-icon.png" width="70" alt="dep" style="margin-right:30px;">
-                        <img id ="arr-icon" src="resources/arr-icon.png" width="70" alt="arr">
-                    </td>
-                    <td width="15%" style="text-align:left;padding-left: 40px;padding-top:10px;">
-                        <p>Arrivals:<span style="margin-left:5px;" id="arrcount"></span> </p><p>Departures:<span id="depcount" style="margin-left:5px;"></span></p>
-                    </td>
-                    <td width="35%" id ="vattitle">
-                        VATBoard
-                    </td>
-                    <td id="appinfo" width="25%">
-                    </td>
-                </tr>
-            </table>
+                        <img id ="arr-icon" src="resources/arr-icon.png" width="70" alt="arr">                        
+                    </div>
+                </div>
+                <div class="col-2">
+                    <p>Arrivals:<span style="margin-left:5px;" id="arrcount"></span> </p><p>Departures:<span id="depcount" style="margin-left:5px;"></span></p>
+                </div>
+                <div class="col-5">
+                    <span id="vattitle">VATBOARD</span>
+                </div>
+                <div class="col-2">
+                    <div class="row">
+                        <div class="col-7">
+                            <span id="txttoggle">Toggle Mode:</span>
+                            <input id="toggleMode" 
+                                   type="checkbox" 
+                                   checked data-style="ios" 
+                                   data-toggle="toggle" 
+                                   data-on="Scroll" 
+                                   data-off="Fade" 
+                                   data-onstyle="warning" 
+                                   data-offstyle="info" 
+                                   data-size="xs">    
+
+                        </div>
+                        <div class="col-5">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
             <table id="table" 
                    class="table-sm table-dark table-striped table-borderless"
                    data-show-pagination-switch="false"
@@ -59,11 +80,16 @@
                     </tr>
                 </thead>
             </table>
+            <div class="row-fluid text-center">
+                <span id="appinfo" class="text-center"></span>     
+            </div>
+
         </div>
         <script src="resources/jquery-3.5.0.min.js"></script>
         <script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
         <script>
             function logoFormatter(value, row, index) {
                 var airline = value.trim().substring(0, 3);
@@ -83,6 +109,9 @@
                 var departures = 0;
                 var rateArrivals = 0;
                 var rateDepartures = 0;
+                var needAnimation;
+                var timerPrimary;
+                var timerFadeout;
                 var $table = $('#table');
                 var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
                 var mode_url = getUrlParam('mode', 'SCROLL').toUpperCase();
@@ -91,7 +120,7 @@
                 //
                 getVersion();
                 getData();
-                var primaryTimer = setInterval(getData, 70000);
+                timerPrimary = setInterval(getData, 70000);
                 //        
                 //Functions/Methods
                 //
@@ -103,7 +132,8 @@
                 }
                 function getVersion() {
                     $.getJSON('getversion.php', function (ver) {
-                        $('#appinfo').text(ver);
+                        var fullInfo = '\251 2020 Elias Stassinos, ' + ver;
+                        $('#appinfo').text(fullInfo);
                     });
                 }
                 function postgetData(d) {
@@ -118,9 +148,11 @@
                     $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
                     //Do the loop until reload
                     determineFilter();
-                    animateScroll();
+                    determineAnimation();
+                    determineMode();
                     setTimeout(function () {
                         determineFilter();
+                        determineMode();
                     }, 30000);
                 }
                 function getUrlParam(parameter, defaultvalue) {
@@ -137,11 +169,30 @@
                     });
                     return vars;
                 }
+                $('#toggleMode').change(function () {
+                    if ($('#toggleMode').prop('checked') === true) {
+                        stopfadeoutFirst();
+                        animateScroll();
+                    } else {
+                        stopanimateScroll();
+                        fadeoutFirst();
+                    }
+                    $('.fixed-table-body').scrollTop(0);
+                });
                 function determineFilter() {
                     if (currentMode === 'arr') {
                         filterDepartures();
                     } else {
                         filterArrivals();
+                    }
+                }
+                function determineMode() {
+                    if (needAnimation === true) {
+                        if (mode_url === "SCROLL") {
+                            animateScroll();
+                        } else {
+                            fadeoutFirst();
+                        }
                     }
                 }
                 function filterArrivals() {
@@ -170,12 +221,35 @@
                     rateArrivals = arrivals * 1000;
                     rateDepartures = departures * 1000;
                 }
-                function animateScroll() {
-                    var rate = (currentMode === 'arr') ? rateArrivals : rateDepartures;
+                function determineAnimation() {
                     if ((currentMode === "arr" && arrivals > 10) || (currentMode === "dep" && departures > 10)) {
-                        $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, rate, 'linear');
-                        $('.fixed-table-body').animate({scrollTop: 0}, rate, 'linear');
+                        needAnimation = true;
+                    } else {
+                        needAnimation = false;
                     }
+                }
+                function determineRate() {
+                    return (currentMode === 'arr') ? rateArrivals : rateDepartures;
+                }
+                function animateScroll() {
+                    $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, determineRate(), 'linear');
+                    $('.fixed-table-body').animate({scrollTop: 0}, determineRate(), 'linear');
+                }
+                function stopanimateScroll() {
+                    $('.fixed-table-body').stop(true, true);
+                }
+                function fadeoutFirst() {
+                    timerFadeout = setInterval(function () {
+                        $('#table tbody tr:first').fadeOut(1000, function () {
+                            $(this).remove();
+                            if ($('#table tbody tr').length === 20) {
+                                clearTimeout(timerFadeout);
+                            }
+                        });
+                    }, 1000);
+                }
+                function stopfadeoutFirst() {
+                    clearTimeout(timerFadeout);
                 }
                 $("#arr-icon").click(function () {
                     filterArrivals();
@@ -187,7 +261,7 @@
                     if ($(".fixed-table-body").is(':animated')) {
                         $('.fixed-table-body').stop(true, true);
                     } else {
-                        animateScroll();
+                        determineMode();
                     }
                 });
             });

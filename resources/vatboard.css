@@ -12,14 +12,21 @@
 .vat-right{
     text-align: right;
 }
-td#vattitle {
+#vattitle {
     font-size: x-large;
 }
 .fixed-table-border, .fixed-table-container {
     border: none !important;
 }
-#appinfo {
+#appinfo, #txttoggle {
     font-size: 0.7em;
+}
+#appinfo {
+    margin-top:10px;
+}
+#txttoggle {
+    vertical-align: middle;
+/*    text-align: center;*/
 }
 
 .arrow-route {
@@ -28,4 +35,6 @@ td#vattitle {
 #arrow-route-container {
     margin: 0px 10px;
 }
+.toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20rem; }
+.toggle.ios .toggle-handle { border-radius: 20rem; }
 
