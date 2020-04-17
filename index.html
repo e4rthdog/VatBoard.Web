@@ -242,7 +242,7 @@
                     timerFadeout = setInterval(function () {
                         $('#table tbody tr:first').fadeOut(1000, function () {
                             $(this).remove();
-                            if ($('#table tbody tr').length === 20) {
+                            if ($('#table tbody tr').length <= 10) {
                                 clearTimeout(timerFadeout);
                             }
                         });
