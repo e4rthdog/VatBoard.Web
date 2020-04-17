@@ -40,7 +40,7 @@
                class="table-sm table-dark table-striped table-borderless"
                data-show-pagination-switch="false"
                data-pagination="false"
-               data-height ="380"
+               data-height ="400"
                data-virtual-scroll ="true"
                data-only-info-pagination="true"
                data-pagination-loop="false">
@@ -84,14 +84,22 @@
                 var $table = $('#table');
                 var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
                 var mode_url = getUrlParam('mode', 'SCROLL').toUpperCase();
+                //
+                //MAIN
+                //
+                getVersion();
                 getData();
                 var primaryTimer = setInterval(getData, 70000);
-
+                //        
+                //Functions/Methods
+                //
                 function getData() {
                     $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
                         vatsimdata = d;
                         postgetData(d);
                     });
+                }
+                function getVersion() {
                     $.getJSON('getversion.php', function (ver) {
                         $('#appinfo').text(ver);
                     });
