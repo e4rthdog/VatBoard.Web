@@ -23,7 +23,7 @@
     <body>
         <div style="margin-top:15px;" class="container-fluid">
             <div class="row">
-                <div class="col-2">
+                <div class="col-3">
                     <div class="container-fluid">
                         <img id ="dep-icon" src="resources/dep-icon.png" width="70" alt="dep" style="margin-right:30px;">
                         <img id ="arr-icon" src="resources/arr-icon.png" width="70" alt="arr">                        
@@ -32,13 +32,13 @@
                 <div class="col-2">
                     <p>Arrivals:<span style="margin-left:5px;" id="arrcount"></span> </p><p>Departures:<span id="depcount" style="margin-left:5px;"></span></p>
                 </div>
-                <div class="col-5">
+                <div class="col-3 text-center">
                     <span id="vattitle">VATBOARD</span>
                 </div>
-                <div class="col-2">
+                <div class="col-4">
                     <div class="row">
-                        <div class="col-7">
-                            <span id="txttoggle">Toggle Mode:</span>
+                        <div class="col-sm">
+                            <span id="txttoggle">Style:</span>    
                             <input id="toggleMode" 
                                    type="checkbox" 
                                    checked data-style="ios" 
@@ -48,10 +48,9 @@
                                    data-onstyle="warning" 
                                    data-offstyle="info" 
                                    data-size="xs">    
-
                         </div>
-                        <div class="col-5">
-
+                        <div class="col-sm">
+                            <div id="MyClockDisplay" class="clock text-center" onload="showTime()"></div>
                         </div>
                     </div>
                 </div>
@@ -91,180 +90,208 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
         <script>
-            function logoFormatter(value, row, index) {
-                var airline = value.trim().substring(0, 3);
-                return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
-            }
-            function airportsFormatter(value, row, index) {
-                return [
-                    value,
-                    '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
-                    row.planned_destairport
-                ].join('');
-            }
-            $(function () {
-                var vatsimdata = [];
-                var currentMode = '';
-                var arrivals = 0;
-                var departures = 0;
-                var rateArrivals = 0;
-                var rateDepartures = 0;
-                var needAnimation;
-                var timerPrimary;
-                var timerFadeout;
-                var $table = $('#table');
-                var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
-                var mode_url = getUrlParam('mode', 'SCROLL').toUpperCase();
-                //
-                //MAIN
-                //
-                getVersion();
-                getData();
-                timerPrimary = setInterval(getData, 70000);
-                //        
-                //Functions/Methods
-                //
-                function getData() {
-                    $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
-                        vatsimdata = d;
-                        postgetData(d);
-                    });
-                }
-                function getVersion() {
-                    $.getJSON('getversion.php', function (ver) {
-                        var fullInfo = '\251 2020 Elias Stassinos, ' + ver;
-                        $('#appinfo').text(fullInfo);
-                    });
-                }
-                function postgetData(d) {
-                    $('.fixed-table-body').stop(true, true); // Stop animation
-                    $table.bootstrapTable({
-                        data: d,
-                        theadClasses: 'thead-dark'
-                    });
-                    $table.bootstrapTable('load', d);
-                    prepareCounters(d);
-                    updateCounters(d);
-                    $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
-                    //Do the loop until reload
-                    determineFilter();
-                    determineAnimation();
-                    determineMode();
-                    setTimeout(function () {
-                        determineFilter();
-                        determineMode();
-                    }, 30000);
-                }
-                function getUrlParam(parameter, defaultvalue) {
-                    var urlparameter = defaultvalue;
-                    if (window.location.href.indexOf(parameter) > -1) {
-                        urlparameter = getUrlVars()[parameter];
-                    }
-                    return urlparameter;
-                }
-                function getUrlVars() {
-                    var vars = {};
-                    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-                        vars[key] = value;
-                    });
-                    return vars;
-                }
-                $('#toggleMode').change(function () {
-                    if ($('#toggleMode').prop('checked') === true) {
-                        stopfadeoutFirst();
-                        animateScroll();
-                    } else {
-                        stopanimateScroll();
-                        fadeoutFirst();
-                    }
-                    $('.fixed-table-body').scrollTop(0);
-                });
-                function determineFilter() {
-                    if (currentMode === 'arr') {
-                        filterDepartures();
-                    } else {
-                        filterArrivals();
-                    }
-                }
-                function determineMode() {
-                    if (needAnimation === true) {
-                        if (mode_url === "SCROLL") {
-                            animateScroll();
-                        } else {
-                            fadeoutFirst();
-                        }
-                    }
-                }
-                function filterArrivals() {
-                    currentMode = 'arr';
-                    $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
-                    $('#dep-icon').attr('src', 'resources/dep-icon.png');
-                    $('#table').bootstrapTable('filterBy', {
-                        planned_destairport: icao_url
-                    });
-                }
-                function filterDepartures() {
-                    currentMode = 'dep';
-                    $('#arr-icon').attr('src', 'resources/arr-icon.png');
-                    $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
-                    $('#table').bootstrapTable('filterBy', {
-                        planned_depairport: icao_url
-                    });
-                }
-                function updateCounters(d) {
-                    $('#arrcount').text(arrivals);
-                    $('#depcount').text(departures);
-                }
-                function prepareCounters(d) {
-                    arrivals = d.filter(v => v.planned_destairport === icao_url).length;
-                    departures = d.filter(v => v.planned_depairport === icao_url).length;
-                    rateArrivals = arrivals * 1000;
-                    rateDepartures = departures * 1000;
-                }
-                function determineAnimation() {
-                    if ((currentMode === "arr" && arrivals > 10) || (currentMode === "dep" && departures > 10)) {
-                        needAnimation = true;
-                    } else {
-                        needAnimation = false;
-                    }
-                }
-                function determineRate() {
-                    return (currentMode === 'arr') ? rateArrivals : rateDepartures;
-                }
-                function animateScroll() {
-                    $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, determineRate(), 'linear');
-                    $('.fixed-table-body').animate({scrollTop: 0}, determineRate(), 'linear');
-                }
-                function stopanimateScroll() {
-                    $('.fixed-table-body').stop(true, true);
-                }
-                function fadeoutFirst() {
-                    timerFadeout = setInterval(function () {
-                        $('#table tbody tr:first').fadeOut(1000, function () {
-                            $(this).remove();
-                            if ($('#table tbody tr').length <= 10) {
-                                clearTimeout(timerFadeout);
-                            }
-                        });
-                    }, 1000);
-                }
-                function stopfadeoutFirst() {
-                    clearTimeout(timerFadeout);
-                }
-                $("#arr-icon").click(function () {
-                    filterArrivals();
-                });
-                $("#dep-icon").click(function () {
-                    filterDepartures();
-                });
-                $('#vattitle').click(function () {
-                    if ($(".fixed-table-body").is(':animated')) {
-                        $('.fixed-table-body').stop(true, true);
-                    } else {
-                        determineMode();
-                    }
-                });
-            });
+                                function logoFormatter(value, row, index) {
+                                    var airline = value.trim().substring(0, 3);
+                                    return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
+                                }
+                                function airportsFormatter(value, row, index) {
+                                    return [
+                                        value,
+                                        '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
+                                        row.planned_destairport
+                                    ].join('');
+                                }
+                                $(function () {
+                                    var vatsimdata = [];
+                                    var currentMode = '';
+                                    var arrivals = 0;
+                                    var departures = 0;
+                                    var rateArrivals = 0;
+                                    var rateDepartures = 0;
+                                    var needAnimation;
+                                    var timerPrimary;
+                                    var timerFadeout;
+                                    var $table = $('#table');
+                                    var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
+                                    var mode_url = getUrlParam('mode', 'SCROLL').toUpperCase();
+                                    //
+                                    //MAIN
+                                    //
+                                    getVersion();
+                                    getData();
+                                    timerPrimary = setInterval(getData, 70000);
+                                    showTime();
+                                    //        
+                                    //Functions/Methods
+                                    //
+                                    function getData() {
+                                        $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
+                                            vatsimdata = d;
+                                            postgetData(d);
+                                        });
+                                    }
+                                    function getVersion() {
+                                        $.getJSON('getversion.php', function (ver) {
+                                            var fullInfo = '\251 2020 Elias Stassinos, ' + ver;
+                                            $('#appinfo').text(fullInfo);
+                                        });
+                                    }
+                                    function postgetData(d) {
+                                        $('.fixed-table-body').stop(true, true); // Stop animation
+                                        $table.bootstrapTable({
+                                            data: d,
+                                            theadClasses: 'thead-dark'
+                                        });
+                                        $table.bootstrapTable('load', d);
+                                        prepareCounters(d);
+                                        updateCounters(d);
+                                        $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
+                                        //Do the loop until reload
+                                        determineFilter();
+                                        determineAnimation();
+                                        determineMode();
+                                        setTimeout(function () {
+                                            determineFilter();
+                                            determineMode();
+                                        }, 30000);
+                                    }
+                                    function getUrlParam(parameter, defaultvalue) {
+                                        var urlparameter = defaultvalue;
+                                        if (window.location.href.indexOf(parameter) > -1) {
+                                            urlparameter = getUrlVars()[parameter];
+                                        }
+                                        return urlparameter;
+                                    }
+                                    function getUrlVars() {
+                                        var vars = {};
+                                        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+                                            vars[key] = value;
+                                        });
+                                        return vars;
+                                    }
+                                    $('#toggleMode').change(function () {
+                                        if ($('#toggleMode').prop('checked') === true) {
+                                            stopfadeoutFirst();
+                                            animateScroll();
+                                        } else {
+                                            stopanimateScroll();
+                                            fadeoutFirst();
+                                        }
+                                        $('.fixed-table-body').scrollTop(0);
+                                    });
+                                    function determineFilter() {
+                                        if (currentMode === 'arr') {
+                                            filterDepartures();
+                                        } else {
+                                            filterArrivals();
+                                        }
+                                    }
+                                    function determineMode() {
+                                        if (needAnimation === true) {
+                                            if (mode_url === "SCROLL") {
+                                                animateScroll();
+                                            } else {
+                                                fadeoutFirst();
+                                            }
+                                        }
+                                    }
+                                    function filterArrivals() {
+                                        currentMode = 'arr';
+                                        $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
+                                        $('#dep-icon').attr('src', 'resources/dep-icon.png');
+                                        $('#table').bootstrapTable('filterBy', {
+                                            planned_destairport: icao_url
+                                        });
+                                    }
+                                    function filterDepartures() {
+                                        currentMode = 'dep';
+                                        $('#arr-icon').attr('src', 'resources/arr-icon.png');
+                                        $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
+                                        $('#table').bootstrapTable('filterBy', {
+                                            planned_depairport: icao_url
+                                        });
+                                    }
+                                    function updateCounters(d) {
+                                        $('#arrcount').text(arrivals);
+                                        $('#depcount').text(departures);
+                                    }
+                                    function prepareCounters(d) {
+                                        arrivals = d.filter(v => v.planned_destairport === icao_url).length;
+                                        departures = d.filter(v => v.planned_depairport === icao_url).length;
+                                        rateArrivals = arrivals * 1000;
+                                        rateDepartures = departures * 1000;
+                                    }
+                                    function determineAnimation() {
+                                        if ((currentMode === "arr" && arrivals > 10) || (currentMode === "dep" && departures > 10)) {
+                                            needAnimation = true;
+                                        } else {
+                                            needAnimation = false;
+                                        }
+                                    }
+                                    function determineRate() {
+                                        return (currentMode === 'arr') ? rateArrivals : rateDepartures;
+                                    }
+                                    function animateScroll() {
+                                        $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, determineRate(), 'linear');
+                                        $('.fixed-table-body').animate({scrollTop: 0}, determineRate(), 'linear');
+                                    }
+                                    function stopanimateScroll() {
+                                        $('.fixed-table-body').stop(true, true);
+                                    }
+                                    function fadeoutFirst() {
+                                        timerFadeout = setInterval(function () {
+                                            $('#table tbody tr:first').fadeOut(1000, function () {
+                                                $(this).remove();
+                                                if ($('#table tbody tr').length <= 10) {
+                                                    clearTimeout(timerFadeout);
+                                                }
+                                            });
+                                        }, 1000);
+                                    }
+                                    function stopfadeoutFirst() {
+                                        clearTimeout(timerFadeout);
+                                    }
+                                    function showTime() {
+                                        var date = new Date();
+                                        var h = date.getHours(); // 0 - 23
+                                        var m = date.getMinutes(); // 0 - 59
+                                        var s = date.getSeconds(); // 0 - 59
+                                        var session = "AM";
+//
+//                                    if (h == 0) {
+//                                        h = 12;
+//                                    }
+//
+//                                    if (h > 12) {
+//                                        h = h - 12;
+//                                        session = "PM";
+//                                    }
+//
+                                        h = (h < 10) ? "0" + h : h;
+                                        m = (m < 10) ? "0" + m : m;
+                                        s = (s < 10) ? "0" + s : s;
+
+                                        var time = h + ":" + m + ":" + s + " ";
+                                        document.getElementById("MyClockDisplay").innerText = time;
+                                        document.getElementById("MyClockDisplay").textContent = time;
+
+                                        setTimeout(showTime, 1000);
+
+                                    }
+                                    $("#arr-icon").click(function () {
+                                        filterArrivals();
+                                    });
+                                    $("#dep-icon").click(function () {
+                                        filterDepartures();
+                                    });
+                                    $('#vattitle').click(function () {
+                                        if ($(".fixed-table-body").is(':animated')) {
+                                            $('.fixed-table-body').stop(true, true);
+                                        } else {
+                                            determineMode();
+                                        }
+                                    });
+                                });
         </script>
     </body>
 </html>

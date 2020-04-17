@@ -26,6 +26,7 @@
 }
 #txttoggle {
     vertical-align: middle;
+    margin: 0 5px;
 /*    text-align: center;*/
 }
 
@@ -37,4 +38,15 @@
 }
 .toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20rem; }
 .toggle.ios .toggle-handle { border-radius: 20rem; }
+
+.clock {
+/*    position: absolute;*/
+/*    top: 50%;
+    left: 50%;*/
+/*    transform: translateX(-50%) translateY(-50%);*/
+    color: white;
+    font-size: 2em;
+/*    font-family: Orbitron;*/
+    letter-spacing: 4px;
+}
 
