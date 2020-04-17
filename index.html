@@ -20,44 +20,46 @@
         </script>
     </head>
     <body>
-        <table id="tableHeader" width=100% style="margin-bottom:20px;">
-            <tr>
-                <td width="25%" style="text-align:left;padding-left: 40px;padding-top:10px;">
-                    <img id ="dep-icon" src="resources/dep-icon.png" width="70" alt="dep" style="margin-right:30px;">
-                    <img id ="arr-icon" src="resources/arr-icon.png" width="70" alt="arr">
-                </td>
-                <td width="15%" style="text-align:left;padding-left: 40px;padding-top:10px;">
-                    <p>Arrivals:<span style="margin-left:5px;" id="arrcount"></span> </p><p>Departures:<span id="depcount" style="margin-left:5px;"></span></p>
-                </td>
-                <td width="35%" id ="vattitle">
-                    VATBoard
-                </td>
-                <td id="appinfo" width="25%">
-                </td>
-            </tr>
-        </table>
-        <table id="table" 
-               class="table-sm table-dark table-striped table-borderless"
-               data-show-pagination-switch="false"
-               data-pagination="false"
-               data-height ="400"
-               data-virtual-scroll ="true"
-               data-only-info-pagination="true"
-               data-pagination-loop="false">
-            <thead>
+        <div>
+            <table id="tableHeader" width=100% style="margin-bottom:20px;">
                 <tr>
-                    <th data-field="callsign" data-formatter="logoFormatter" class="vat-center">Callsign</th>
-                    <th data-field="planned_depairport" data-formatter = "airportsFormatter" class="vat-center">Route</th>
-                    <!--                    <th data-field="planned_depairport" class="vat-center">Origin</th>
-                                        <th data-field="planned_destairport" class="vat-center">Destination</th>-->
-                    <th data-field="planned_aircraft" class="vat-center">Aircraft</th>
-                    <th data-field="altitude" class="vat-right">Altitude</th>
-                    <th data-field="groundspeed" class="vat-right">GS</th>
-                    <th data-field="dest_distance" class="vat-right">Distance</th>
-                    <th data-field="ETA" class="vat-center">ETA</th>
+                    <td width="25%" style="text-align:left;padding-left: 40px;padding-top:10px;">
+                        <img id ="dep-icon" src="resources/dep-icon.png" width="70" alt="dep" style="margin-right:30px;">
+                        <img id ="arr-icon" src="resources/arr-icon.png" width="70" alt="arr">
+                    </td>
+                    <td width="15%" style="text-align:left;padding-left: 40px;padding-top:10px;">
+                        <p>Arrivals:<span style="margin-left:5px;" id="arrcount"></span> </p><p>Departures:<span id="depcount" style="margin-left:5px;"></span></p>
+                    </td>
+                    <td width="35%" id ="vattitle">
+                        VATBoard
+                    </td>
+                    <td id="appinfo" width="25%">
+                    </td>
                 </tr>
-            </thead>
-        </table>
+            </table>
+            <table id="table" 
+                   class="table-sm table-dark table-striped table-borderless"
+                   data-show-pagination-switch="false"
+                   data-pagination="false"
+                   data-height ="400"
+                   data-virtual-scroll ="true"
+                   data-only-info-pagination="true"
+                   data-pagination-loop="false">
+                <thead class="thead-light">
+                    <tr>
+                        <th data-field="callsign" data-formatter="logoFormatter" class="vat-center">Callsign</th>
+                        <th data-field="planned_depairport" data-formatter = "airportsFormatter" class="vat-center">Route</th>
+                        <!--                    <th data-field="planned_depairport" class="vat-center">Origin</th>
+                                            <th data-field="planned_destairport" class="vat-center">Destination</th>-->
+                        <th data-field="planned_aircraft" class="vat-center">Aircraft</th>
+                        <th data-field="altitude" class="vat-right">Altitude</th>
+                        <th data-field="groundspeed" class="vat-right">GS</th>
+                        <th data-field="dest_distance" class="vat-right">Distance</th>
+                        <th data-field="ETA" class="vat-center">ETA</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
         <script src="resources/jquery-3.5.0.min.js"></script>
         <script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
