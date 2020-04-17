@@ -63,114 +63,124 @@
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
         <script>
-    function logoFormatter(value, row, index) {
-        var airline = value.trim().substring(0, 3);
-        return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
-    }
-    function airportsFormatter(value, row, index) {
-        return [
-            value,
-            '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
-            row.planned_destairport
-        ].join('');
-    }
-    $(function () {
-        var vatsimdata = [];
-        var currentMode = '';
-        var arrivals = 0;
-        var departures = 0;
-        var rateArrivals = 0;
-        var rateDepartures = 0;
-        var $table = $('#table');
-        var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
-        getData();
-        var primaryTimer = setInterval(getData, 70000);
+            function logoFormatter(value, row, index) {
+                var airline = value.trim().substring(0, 3);
+                return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
+            }
+            function airportsFormatter(value, row, index) {
+                return [
+                    value,
+                    '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
+                    row.planned_destairport
+                ].join('');
+            }
+            $(function () {
+                var vatsimdata = [];
+                var currentMode = '';
+                var arrivals = 0;
+                var departures = 0;
+                var rateArrivals = 0;
+                var rateDepartures = 0;
+                var $table = $('#table');
+                var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
+                var mode_url = getUrlParam('mode', 'SCROLL').toUpperCase();
+                getData();
+                var primaryTimer = setInterval(getData, 70000);
 
-        function getData() {
-            $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
-                vatsimdata = d;
-                postgetData(d);
+                function getData() {
+                    $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
+                        vatsimdata = d;
+                        postgetData(d);
+                    });
+                    $.getJSON('getversion.php', function (ver) {
+                        $('#appinfo').text(ver);
+                    });
+                }
+                function postgetData(d) {
+                    $('.fixed-table-body').stop(true, true); // Stop animation
+                    $table.bootstrapTable({
+                        data: d,
+                        theadClasses: 'thead-dark'
+                    });
+                    $table.bootstrapTable('load', d);
+                    prepareCounters(d);
+                    updateCounters(d);
+                    $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
+                    //Do the loop until reload
+                    determineFilter();
+                    animateScroll();
+                    setTimeout(function () {
+                        determineFilter();
+                    }, 30000);
+                }
+                function getUrlParam(parameter, defaultvalue) {
+                    var urlparameter = defaultvalue;
+                    if (window.location.href.indexOf(parameter) > -1) {
+                        urlparameter = getUrlVars()[parameter];
+                    }
+                    return urlparameter;
+                }
+                function getUrlVars() {
+                    var vars = {};
+                    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+                        vars[key] = value;
+                    });
+                    return vars;
+                }
+                function determineFilter() {
+                    if (currentMode === 'arr') {
+                        filterDepartures();
+                    } else {
+                        filterArrivals();
+                    }
+                }
+                function filterArrivals() {
+                    currentMode = 'arr';
+                    $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
+                    $('#dep-icon').attr('src', 'resources/dep-icon.png');
+                    $('#table').bootstrapTable('filterBy', {
+                        planned_destairport: icao_url
+                    });
+                }
+                function filterDepartures() {
+                    currentMode = 'dep';
+                    $('#arr-icon').attr('src', 'resources/arr-icon.png');
+                    $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
+                    $('#table').bootstrapTable('filterBy', {
+                        planned_depairport: icao_url
+                    });
+                }
+                function updateCounters(d) {
+                    $('#arrcount').text(arrivals);
+                    $('#depcount').text(departures);
+                }
+                function prepareCounters(d) {
+                    arrivals = d.filter(v => v.planned_destairport === icao_url).length;
+                    departures = d.filter(v => v.planned_depairport === icao_url).length;
+                    rateArrivals = arrivals * 1000;
+                    rateDepartures = departures * 1000;
+                }
+                function animateScroll() {
+                    var rate = (currentMode === 'arr') ? rateArrivals : rateDepartures;
+                    if ((currentMode === "arr" && arrivals > 10) || (currentMode === "dep" && departures > 10)) {
+                        $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, rate, 'linear');
+                        $('.fixed-table-body').animate({scrollTop: 0}, rate, 'linear');
+                    }
+                }
+                $("#arr-icon").click(function () {
+                    filterArrivals();
+                });
+                $("#dep-icon").click(function () {
+                    filterDepartures();
+                });
+                $('#vattitle').click(function () {
+                    if ($(".fixed-table-body").is(':animated')) {
+                        $('.fixed-table-body').stop(true, true);
+                    } else {
+                        animateScroll();
+                    }
+                });
             });
-            $.getJSON('getversion.php', function (ver) {
-                $('#appinfo').text(ver);
-            });
-        }
-        function postgetData(d) {
-            $('.fixed-table-body').stop(true, true);
-            $table.bootstrapTable({
-                data: d,
-                theadClasses: 'thead-dark'
-            });
-            $table.bootstrapTable('load', d);
-            prepareCounters(d);
-            updateCounters(d);
-            $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
-            filterArrivals();
-            animateScroll();
-            setTimeout(function () {
-                filterDepartures();
-            }, 30000);
-            animateScroll();
-        }
-        function getUrlParam(parameter, defaultvalue) {
-            var urlparameter = defaultvalue;
-            if (window.location.href.indexOf(parameter) > -1) {
-                urlparameter = getUrlVars()[parameter];
-            }
-            return urlparameter;
-        }
-        function getUrlVars() {
-            var vars = {};
-            var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-                vars[key] = value;
-            });
-            return vars;
-        }
-        function filterArrivals() {
-            currentMode = 'arr';
-            $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
-            $('#dep-icon').attr('src', 'resources/dep-icon.png');
-            $('#table').bootstrapTable('filterBy', {
-                planned_destairport: icao_url
-            });
-        }
-        function filterDepartures() {
-            currentMode = 'dep';
-            $('#arr-icon').attr('src', 'resources/arr-icon.png');
-            $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
-            $('#table').bootstrapTable('filterBy', {
-                planned_depairport: icao_url
-            });
-        }
-        function updateCounters(d) {
-            $('#arrcount').text(arrivals);
-            $('#depcount').text(departures);
-        }
-        function prepareCounters(d) {
-            arrivals = d.filter(v => v.planned_destairport === icao_url).length;
-            departures = d.filter(v => v.planned_depairport === icao_url).length;
-            rateArrivals = arrivals * 1000;
-            rateDepartures = departures * 1000;
-        }
-        function animateScroll() {
-            var rate = (currentMode === 'arr') ? rateArrivals : rateDepartures;
-            $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, rate, 'linear');
-            $('.fixed-table-body').animate({scrollTop: 0}, rate, 'linear');
-        }
-        $("#arr-icon").click(function () {
-            filterArrivals();
-        });
-        $("#dep-icon").click(function () {
-            filterDepartures();
-        });
-        $('#vattitle').click(function () {
-            if ($(".fixed-table-body").is(':animated')) {
-                $('.fixed-table-body').stop(true, true);
-            } else {
-                animateScroll();
-            }
-        });
-    });
         </script>
     </body>
 </html>
