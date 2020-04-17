@@ -22,3 +22,10 @@ td#vattitle {
     font-size: 0.7em;
 }
 
+.arrow-route {
+    fill: orange;
+}
+#arrow-route-container {
+    margin: 0px 10px;
+}
+

@@ -7,7 +7,6 @@
         <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.css">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous">
         <link rel="stylesheet" href="resources/vatboard.css">
-
     </head>
     <body>
         <table id="tableHeader" width=100% style="margin-bottom:20px;">
@@ -37,7 +36,7 @@
             <thead>
                 <tr>
                     <th data-field="callsign" data-formatter="logoFormatter" class="vat-center">Callsign</th>
-                    <th data-field="planned_depairport" data-formatter = "airportsFormatter" class="vat-center">Departure/Destination</th>
+                    <th data-field="planned_depairport" data-formatter = "airportsFormatter" class="vat-center">Route</th>
                     <!--                    <th data-field="planned_depairport" class="vat-center">Origin</th>
                                         <th data-field="planned_destairport" class="vat-center">Destination</th>-->
                     <th data-field="planned_aircraft" class="vat-center">Aircraft</th>
@@ -58,7 +57,11 @@
                 return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
             }
             function airportsFormatter(value, row, index) {
-                return value + " ==> " + row.planned_destairport;
+                return [
+                    value,
+                    '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
+                    row.planned_destairport
+                ].join('');
             }
             $(function () {
                 var vatsimdata = [];
