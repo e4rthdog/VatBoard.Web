@@ -79,10 +79,15 @@ if ($vatsim->loadData()) {
         $pilot["altitude"] = number_format($pilot["altitude"], 0, ",", ".");
         array_push($result, $pilot);
     }
+    usort($result, "sortByDistanceDest");
     header('Content-Type: application/json');
     echo json_encode(array_values(array_filter($result, "filterVAT")));
 } else {
     echo json_encode("Data could not be loaded");
+}
+
+function sortByDistanceDest($a, $b) {
+    return intval(str_replace('.', '', $a["dest_distance"])) - intval(str_replace('.', '', $b["dest_distance"]));
 }
 
 function getAirportData($param) {
