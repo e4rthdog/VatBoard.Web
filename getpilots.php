@@ -79,7 +79,11 @@ if ($vatsim->loadData()) {
         $pilot["altitude"] = number_format($pilot["altitude"], 0, ",", ".");
         array_push($result, $pilot);
     }
-    usort($result, "sortByDistanceDest");
+    $departures = array_values(array_filter($result, "filterDEP"));
+    $arrivals = array_values(array_filter($result, "filterARR"));
+    usort($arrivals, "sortByDistanceDest");
+    usort($departures, "sortByDistanceDep");
+    $result = array_merge($arrivals, $departures);
     header('Content-Type: application/json');
     echo json_encode(array_values(array_filter($result, "filterVAT")));
 } else {
@@ -90,12 +94,38 @@ function sortByDistanceDest($a, $b) {
     return intval(str_replace('.', '', $a["dest_distance"])) - intval(str_replace('.', '', $b["dest_distance"]));
 }
 
+function sortByDistanceDep($a, $b) {
+    return intval(str_replace('.', '', $a["dep_distance"])) - intval(str_replace('.', '', $b["dep_distance"]));
+}
+
 function getAirportData($param) {
     global $Db, $sqlLookup;
     $sqlStatement = $Db->prepare($sqlLookup);
     $sqlStatement->bindValue(':icao', $param);
     $sqlStatement->execute();
     return $airport = $sqlStatement->fetch(\PDO::FETCH_ASSOC);
+}
+
+function filterDEP($array) {
+    if (
+            ($array["planned_depairport"] === strtoupper(filter_input(INPUT_GET, "icao")) &&
+            $array["clienttype"] === "PILOT")
+    ) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+function filterARR($array) {
+    if (
+            ($array["planned_destairport"] === strtoupper(filter_input(INPUT_GET, "icao")) &&
+            $array["clienttype"] === "PILOT")
+    ) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 function filterVat($array) {
