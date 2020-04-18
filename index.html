@@ -48,7 +48,7 @@
         </div>
         <div class="container-fluid">
             <table id="table" 
-                   class="table-sm table-dark table-striped table-borderless"
+                   class="table-sm table-dark table-borderless"
                    data-show-pagination-switch="false"
                    data-pagination="false"
                    data-height ="410"
@@ -106,7 +106,7 @@
                                 });
                                 getVersion();
                                 getData();
-                                timerPrimary = setInterval(getData, 70000);
+                                timerPrimary = setInterval(getData, 120000);
                                 showTime();
                                 //        
                                 //Functions/Methods
@@ -132,7 +132,7 @@
                                     doLoop();
                                     setTimeout(function () {
                                         doLoop();
-                                    }, 30000);
+                                    }, 60000);
                                 }
                                 function doLoop() {
                                     determineFilter(vatsimdata);
@@ -161,7 +161,6 @@
                                 }
                                 function filterArrivals(d) {
                                     stopfadeoutFirst();
-//                                    stopanimateScroll();
                                     currentMode = 'arr';
                                     $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
                                     $('#dep-icon').attr('src', 'resources/dep-icon.png');
@@ -173,7 +172,6 @@
                                 }
                                 function filterDepartures(d) {
                                     stopfadeoutFirst();
-//                                    stopanimateScroll();
                                     currentMode = 'dep';
                                     $('#arr-icon').attr('src', 'resources/arr-icon.png');
                                     $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
@@ -215,11 +213,10 @@
                                                 });
                                                 $(this).slideUp(1000, function () {
                                                     row.remove();
-
                                                 });
                                             });
                                         }
-                                    }, 2500);
+                                    }, 3500);
                                 }
                                 function stopfadeoutFirst() {
                                     clearTimeout(timerFadeout);
