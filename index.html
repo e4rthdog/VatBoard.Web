@@ -49,9 +49,10 @@
         <div class="container-fluid">
             <table id="table" 
                    class="table-sm table-dark table-borderless"
+                   data-row-style="rowStyle"
                    data-show-pagination-switch="false"
                    data-pagination="false"
-                   data-height ="410"
+                   data-height ="400"
                    data-virtual-scroll ="true"
                    data-only-info-pagination="true"
                    data-pagination-loop="false">
@@ -89,6 +90,13 @@
                                     '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
                                     row.planned_destairport
                                 ].join('');
+                            }
+                            function rowStyle(row, index) {
+                                return {
+                                    css: {
+                                        'border-bottom' : '1pt solid gray'
+                                    }
+                                }
                             }
                             $(function () {
                                 var vatsimdata = [];
