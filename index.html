@@ -41,16 +41,6 @@
                 </div>
                 <div class="col-4">
                     <div class="container-fluid text-center" style="margin:auto;">
-                        <span id="txttoggle">Style:</span>    
-                        <input id="toggleMode" 
-                               type="checkbox" 
-                               checked data-style="ios" 
-                               data-toggle="toggle" 
-                               data-on="Scroll" 
-                               data-off="Fade" 
-                               data-onstyle="warning" 
-                               data-offstyle="info" 
-                               data-size="xs">    
                         <div id="MyClockDisplay" class="clock text-center align-middle" onload="showTime()"></div>
                     </div>
                 </div>
@@ -61,7 +51,7 @@
                    class="table-sm table-dark table-striped table-borderless"
                    data-show-pagination-switch="false"
                    data-pagination="false"
-                   data-height ="400"
+                   data-height ="410"
                    data-virtual-scroll ="true"
                    data-only-info-pagination="true"
                    data-pagination-loop="false">
@@ -105,17 +95,15 @@
                                 var currentMode = '';
                                 var arrivals = 0;
                                 var departures = 0;
-                                var rateArrivals = 0;
-                                var rateDepartures = 0;
-                                var needAnimation;
                                 var timerPrimary;
                                 var timerFadeout;
                                 var $table = $('#table');
                                 var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
-                                var mode = true;
                                 //
                                 //MAIN
                                 //
+                                $table.bootstrapTable({
+                                });
                                 getVersion();
                                 getData();
                                 timerPrimary = setInterval(getData, 70000);
@@ -136,23 +124,19 @@
                                     });
                                 }
                                 function postgetData(d) {
-                                    $('.fixed-table-body').stop(true, true); // Stop animation
-                                    $table.bootstrapTable({
-                                        data: d,
-                                        theadClasses: 'thead-dark'
-                                    });
-                                    $table.bootstrapTable('load', d);
+                                    $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
+                                    stopfadeoutFirst();
                                     prepareCounters(d);
                                     updateCounters(d);
-                                    $('#vattitle').text("VATBoard - Arrivals / Departures for " + icao_url);
                                     //Do the loop until reload
-                                    determineFilter();
-                                    determineAnimation();
-                                    determineMode();
+                                    doLoop();
                                     setTimeout(function () {
-                                        determineFilter();
-                                        determineMode();
+                                        doLoop();
                                     }, 30000);
+                                }
+                                function doLoop() {
+                                    determineFilter(vatsimdata);
+                                    fadeoutFirst();
                                 }
                                 function getUrlParam(parameter, defaultvalue) {
                                     var urlparameter = defaultvalue;
@@ -168,49 +152,37 @@
                                     });
                                     return vars;
                                 }
-                                $('#toggleMode').change(function () {
-                                    if ($('#toggleMode').prop('checked') === true) {
-                                        stopfadeoutFirst();
-                                        mode = true;
-                                        determineMode();
-                                    } else {
-                                        stopanimateScroll();
-                                        mode = false;
-                                        determineMode();
-                                    }
-                                    $('.fixed-table-body').scrollTop(0);
-                                });
-                                function determineFilter() {
+                                function determineFilter(d) {
                                     if (currentMode === 'arr') {
-                                        filterDepartures();
+                                        filterDepartures(d);
                                     } else {
-                                        filterArrivals();
+                                        filterArrivals(d);
                                     }
                                 }
-                                function determineMode() {
-                                    if (needAnimation === true) {
-                                        if (mode === true) {
-                                            animateScroll();
-                                        } else {
-                                            fadeoutFirst();
-                                        }
-                                    }
-                                }
-                                function filterArrivals() {
+                                function filterArrivals(d) {
+                                    stopfadeoutFirst();
+//                                    stopanimateScroll();
                                     currentMode = 'arr';
                                     $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
                                     $('#dep-icon').attr('src', 'resources/dep-icon.png');
-                                    $('#table').bootstrapTable('filterBy', {
-                                        planned_destairport: icao_url
-                                    });
+                                    $('#table tbody').fadeOut(1000, function () {
+                                        $table.bootstrapTable('load', d);
+                                        $('#table').bootstrapTable(
+                                                'filterBy', {planned_destairport: icao_url});
+                                    }).fadeIn(1000);
                                 }
-                                function filterDepartures() {
+                                function filterDepartures(d) {
+                                    stopfadeoutFirst();
+//                                    stopanimateScroll();
                                     currentMode = 'dep';
                                     $('#arr-icon').attr('src', 'resources/arr-icon.png');
                                     $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
-                                    $('#table').bootstrapTable('filterBy', {
-                                        planned_depairport: icao_url
-                                    });
+                                    $('#table tbody').fadeOut(1000, function () {
+                                        $table.bootstrapTable('load', d);
+                                        $('#table').bootstrapTable('filterBy', {
+                                            planned_depairport: icao_url
+                                        });
+                                    }).fadeIn(1000);
                                 }
                                 function updateCounters(d) {
                                     $('#arrcount').text(arrivals);
@@ -219,34 +191,34 @@
                                 function prepareCounters(d) {
                                     arrivals = d.filter(v => v.planned_destairport === icao_url).length;
                                     departures = d.filter(v => v.planned_depairport === icao_url).length;
-                                    rateArrivals = arrivals * 1000;
-                                    rateDepartures = departures * 1000;
-                                }
-                                function determineAnimation() {
-                                    if ((currentMode === "arr" && arrivals > 10) || (currentMode === "dep" && departures > 10)) {
-                                        needAnimation = true;
-                                    } else {
-                                        needAnimation = false;
-                                    }
-                                }
-                                function determineRate() {
-                                    return (currentMode === 'arr') ? rateArrivals : rateDepartures;
-                                }
-                                function animateScroll() {
-                                    $('.fixed-table-body').animate({scrollTop: $('.fixed-table-body').prop("scrollHeight")}, determineRate(), 'linear');
-                                    $('.fixed-table-body').animate({scrollTop: 0}, determineRate(), 'linear');
-                                }
-                                function stopanimateScroll() {
-                                    $('.fixed-table-body').stop(true, true);
                                 }
                                 function fadeoutFirst() {
                                     timerFadeout = setInterval(function () {
-                                        $('#table tbody tr:first').fadeOut(1000, function () {
-                                            $(this).remove();
-                                            if ($('#table tbody tr').length <= 10) {
-                                                stopfadeoutFirst();
-                                            }
-                                        });
+                                        if ($('#table tbody tr').length <= 10) {
+                                            stopfadeoutFirst();
+                                        } else {
+                                            let row = $('#table tbody tr:first')
+                                            row.animate({opacity: 0}, 1000, function () {
+                                                let col = row.find('td')
+                                                col
+                                                        .wrapInner('<div style="display: block;" />')
+                                                        .parent()
+                                                        .find('td > div')
+                                                        .animate({
+                                                            height: 0
+                                                        }, 1000);
+
+                                                col.animate({
+                                                    padding: 0
+                                                }, 1000, function () {
+                                                    row.remove();
+                                                });
+                                                $(this).slideUp(1000, function () {
+                                                    row.remove();
+
+                                                });
+                                            });
+                                        }
                                     }, 2500);
                                 }
                                 function stopfadeoutFirst() {
@@ -258,17 +230,7 @@
                                     var h = date.getHours() + (offsetHours); // 0 - 23
                                     var m = date.getMinutes(); // 0 - 59
                                     var s = date.getSeconds(); // 0 - 59
-//                                        var session = "AM";
-//
-//                                    if (h == 0) {
-//                                        h = 12;
-//                                    }
-//
-//                                    if (h > 12) {
-//                                        h = h - 12;
-//                                        session = "PM";
-//                                    }
-//
+                                    h = (h < 0) ? 24 - h : h;
                                     h = (h < 10) ? "0" + h : h;
                                     m = (m < 10) ? "0" + m : m;
                                     s = (s < 10) ? "0" + s : s;
@@ -281,10 +243,10 @@
 
                                 }
                                 $("#arr-icon").click(function () {
-                                    filterArrivals();
+                                    doLoop();
                                 });
                                 $("#dep-icon").click(function () {
-                                    filterDepartures();
+                                    doLoop();
                                 });
                             });
         </script>
