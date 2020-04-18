@@ -13,10 +13,13 @@
     text-align: right;
 }
 #vattitle {
-    font-size: x-large;
+    font-size: 1.5em;
 }
 .fixed-table-border, .fixed-table-container {
     border: none !important;
+}
+.fixed-table-body {
+    overflow: hidden !important;
 }
 #appinfo {
     font-size: 0.7em;
