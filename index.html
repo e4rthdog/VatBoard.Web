@@ -162,22 +162,26 @@
                                 function filterArrivals(d) {
                                     stopfadeoutFirst();
                                     currentMode = 'arr';
+                                    $table.bootstrapTable('hideColumn', 'dep_distance');
+                                    $table.bootstrapTable('showColumn', 'dest_distance');
                                     $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
                                     $('#dep-icon').attr('src', 'resources/dep-icon.png');
                                     $('#table tbody').fadeOut(1000, function () {
                                         $table.bootstrapTable('load', d);
-                                        $('#table').bootstrapTable(
+                                        $table.bootstrapTable(
                                                 'filterBy', {planned_destairport: icao_url});
                                     }).fadeIn(1000);
                                 }
                                 function filterDepartures(d) {
                                     stopfadeoutFirst();
                                     currentMode = 'dep';
+                                    $table.bootstrapTable('showColumn', 'dep_distance');
+                                    $table.bootstrapTable('hideColumn', 'dest_distance');
                                     $('#arr-icon').attr('src', 'resources/arr-icon.png');
                                     $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
                                     $('#table tbody').fadeOut(1000, function () {
                                         $table.bootstrapTable('load', d);
-                                        $('#table').bootstrapTable('filterBy', {
+                                        $table.bootstrapTable('filterBy', {
                                             planned_depairport: icao_url
                                         });
                                     }).fadeIn(1000);
