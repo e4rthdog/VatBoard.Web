@@ -62,8 +62,8 @@
                         <th data-field="planned_aircraft" class="vat-center">Aircraft</th>
                         <th data-field="altitude" class="vat-right">Altitude</th>
                         <th data-field="groundspeed" class="vat-right">GS</th>
-                        <th data-field="dep_distance" class="vat-right">Distance From</th>
-                        <th data-field="dest_distance" class="vat-right">Distance To</th>
+                        <th data-field="dep_distance" class="vat-right"></th>
+                        <th data-field="dest_distance" class="vat-right"></th>
                         <th data-field="ETA" class="vat-center">ETA</th>
                     </tr>
                 </thead>
@@ -108,6 +108,7 @@
                                 getData();
                                 timerPrimary = setInterval(getData, 120000);
                                 showTime();
+                                setDistanceTitle();
                                 //        
                                 //Functions/Methods
                                 //
@@ -137,6 +138,16 @@
                                 function doLoop() {
                                     determineFilter(vatsimdata);
                                     fadeoutFirst();
+                                }
+                                function setDistanceTitle() {
+                                    $table.bootstrapTable('updateColumnTitle', {
+                                        field: 'dep_distance',
+                                        title: 'NM outound'
+                                    });
+                                    $table.bootstrapTable('updateColumnTitle', {
+                                        field: 'dest_distance',
+                                        title: 'NM inbound'
+                                    });
                                 }
                                 function getUrlParam(parameter, defaultvalue) {
                                     var urlparameter = defaultvalue;
