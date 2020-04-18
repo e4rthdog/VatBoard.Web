@@ -41,7 +41,10 @@
                 </div>
                 <div class="col-4">
                     <div class="container-fluid text-center" style="margin:auto;">
-                        <div id="MyClockDisplay" class="clock text-center align-middle" onload="showTime()"></div>
+                        <p>
+                            <span id="MyClockDisplay" class="clock text-center align-middle" onload="showTime()"></span>
+                            <span style="font-size:0.8em;vertical-align:super;">UTC</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -80,195 +83,195 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
         <script>
-                            function logoFormatter(value, row, index) {
-                                var airline = value.trim().substring(0, 3);
-                                return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
-                            }
-                            function airportsFormatter(value, row, index) {
-                                return [
-                                    value,
-                                    '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
-                                    row.planned_destairport
-                                ].join('');
-                            }
-                            function rowStyle(row, index) {
-                                return {
-                                    css: {
-                                        'border-bottom': '1pt dotted #776600'
-                                    }
+                                function logoFormatter(value, row, index) {
+                                    var airline = value.trim().substring(0, 3);
+                                    return '<img alt="" width=24px src="resources/logos/' + airline + '.png"><span style="margin-left:10px;">' + value + '</span>';
                                 }
-                            }
-                            $(function () {
-                                var vatsimdata = [];
-                                var currentMode = '';
-                                var arrivals = 0;
-                                var departures = 0;
-                                var timerPrimary;
-                                var timerFadeout;
-                                var $table = $('#table');
-                                var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
-                                //
-                                //MAIN
-                                //
-                                $table.bootstrapTable({
-                                });
-                                getVersion();
-                                getData();
-                                timerPrimary = setInterval(getData, 120000);
-                                showTime();
-                                setDistanceTitle();
-                                //        
-                                //Functions/Methods
-                                //
-                                function getData() {
-                                    $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
-                                        vatsimdata = d;
-                                        postgetData(d);
-                                    });
+                                function airportsFormatter(value, row, index) {
+                                    return [
+                                        value,
+                                        '<span id="arrow-route-container"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"><path class="arrow-route" d="M7.5 11.5L9 13l5-5-5-5-1.5 1.5L10.179 7H2v2h8.179L7.5 11.5z"/></svg></span>',
+                                        row.planned_destairport
+                                    ].join('');
                                 }
-                                function getVersion() {
-                                    $.getJSON('getversion.php', function (ver) {
-                                        var fullInfo = '\251 2020 Elias Stassinos, ' + ver;
-                                        $('#appinfo').text(fullInfo);
-                                    });
-                                }
-                                function postgetData(d) {
-                                    $('#vattitle').text("VATBoard - Flights Board for " + icao_url);
-                                    stopfadeoutFirst();
-                                    prepareCounters(d);
-                                    updateCounters(d);
-                                    //Do the loop until reload
-                                    doLoop();
-                                    setTimeout(function () {
-                                        doLoop();
-                                    }, 60000);
-                                }
-                                function doLoop() {
-                                    determineFilter(vatsimdata);
-                                    fadeoutFirst();
-                                }
-                                function setDistanceTitle() {
-                                    $table.bootstrapTable('updateColumnTitle', {
-                                        field: 'dep_distance',
-                                        title: 'NM outound'
-                                    });
-                                    $table.bootstrapTable('updateColumnTitle', {
-                                        field: 'dest_distance',
-                                        title: 'NM inbound'
-                                    });
-                                }
-                                function getUrlParam(parameter, defaultvalue) {
-                                    var urlparameter = defaultvalue;
-                                    if (window.location.href.indexOf(parameter) > -1) {
-                                        urlparameter = getUrlVars()[parameter];
-                                    }
-                                    return urlparameter;
-                                }
-                                function getUrlVars() {
-                                    var vars = {};
-                                    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-                                        vars[key] = value;
-                                    });
-                                    return vars;
-                                }
-                                function determineFilter(d) {
-                                    if (currentMode === 'arr') {
-                                        filterDepartures(d);
-                                    } else {
-                                        filterArrivals(d);
-                                    }
-                                }
-                                function filterArrivals(d) {
-                                    stopfadeoutFirst();
-                                    currentMode = 'arr';
-                                    $table.bootstrapTable('hideColumn', 'dep_distance');
-                                    $table.bootstrapTable('showColumn', 'dest_distance');
-                                    $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
-                                    $('#dep-icon').attr('src', 'resources/dep-icon.png');
-                                    $('#table tbody').fadeOut(1000, function () {
-                                        $table.bootstrapTable('load', d);
-                                        $table.bootstrapTable(
-                                                'filterBy', {planned_destairport: icao_url});
-                                    }).fadeIn(1000);
-                                }
-                                function filterDepartures(d) {
-                                    stopfadeoutFirst();
-                                    currentMode = 'dep';
-                                    $table.bootstrapTable('showColumn', 'dep_distance');
-                                    $table.bootstrapTable('hideColumn', 'dest_distance');
-                                    $('#arr-icon').attr('src', 'resources/arr-icon.png');
-                                    $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
-                                    $('#table tbody').fadeOut(1000, function () {
-                                        $table.bootstrapTable('load', d);
-                                        $table.bootstrapTable('filterBy', {
-                                            planned_depairport: icao_url
-                                        });
-                                    }).fadeIn(1000);
-                                }
-                                function updateCounters(d) {
-                                    $('#arrcount').text(arrivals);
-                                    $('#depcount').text(departures);
-                                }
-                                function prepareCounters(d) {
-                                    arrivals = d.filter(v => v.planned_destairport === icao_url).length;
-                                    departures = d.filter(v => v.planned_depairport === icao_url).length;
-                                }
-                                function fadeoutFirst() {
-                                    timerFadeout = setInterval(function () {
-                                        if ($('#table tbody tr').length <= 10) {
-                                            stopfadeoutFirst();
-                                        } else {
-                                            let row = $('#table tbody tr:first')
-                                            row.animate({opacity: 0}, 1000, function () {
-                                                let col = row.find('td')
-                                                col
-                                                        .wrapInner('<div style="display: block;" />')
-                                                        .parent()
-                                                        .find('td > div')
-                                                        .animate({
-                                                            height: 0
-                                                        }, 1000);
-
-                                                col.animate({
-                                                    padding: 0
-                                                }, 1000, function () {
-                                                    row.remove();
-                                                });
-                                                $(this).slideUp(1000, function () {
-                                                    row.remove();
-                                                });
-                                            });
+                                function rowStyle(row, index) {
+                                    return {
+                                        css: {
+                                            'border-bottom': '1pt dotted #776600'
                                         }
-                                    }, 3500);
+                                    }
                                 }
-                                function stopfadeoutFirst() {
-                                    clearTimeout(timerFadeout);
-                                }
-                                function showTime() {
-                                    var date = new Date();
-                                    var offsetHours = date.getTimezoneOffset() / 60;
-                                    var h = date.getHours() + (offsetHours); // 0 - 23
-                                    var m = date.getMinutes(); // 0 - 59
-                                    var s = date.getSeconds(); // 0 - 59
-                                    h = (h < 0) ? 24 - h : h;
-                                    h = (h < 10) ? "0" + h : h;
-                                    m = (m < 10) ? "0" + m : m;
-                                    s = (s < 10) ? "0" + s : s;
+                                $(function () {
+                                    var vatsimdata = [];
+                                    var currentMode = '';
+                                    var arrivals = 0;
+                                    var departures = 0;
+                                    var timerPrimary;
+                                    var timerFadeout;
+                                    var $table = $('#table');
+                                    var icao_url = getUrlParam('icao', 'LGAV').toUpperCase();
+                                    //
+                                    //MAIN
+                                    //
+                                    $table.bootstrapTable({
+                                    });
+                                    getVersion();
+                                    getData();
+                                    timerPrimary = setInterval(getData, 120000);
+                                    showTime();
+                                    setDistanceTitle();
+                                    //        
+                                    //Functions/Methods
+                                    //
+                                    function getData() {
+                                        $.getJSON('getpilots.php', {icao: escape(icao_url)}, function (d) {
+                                            vatsimdata = d;
+                                            postgetData(d);
+                                        });
+                                    }
+                                    function getVersion() {
+                                        $.getJSON('getversion.php', function (ver) {
+                                            var fullInfo = '\251 2020 Elias Stassinos, ' + ver;
+                                            $('#appinfo').text(fullInfo);
+                                        });
+                                    }
+                                    function postgetData(d) {
+                                        $('#vattitle').text("VATBoard - Flights Board for " + icao_url);
+                                        stopfadeoutFirst();
+                                        prepareCounters(d);
+                                        updateCounters(d);
+                                        //Do the loop until reload
+                                        doLoop();
+                                        setTimeout(function () {
+                                            doLoop();
+                                        }, 60000);
+                                    }
+                                    function doLoop() {
+                                        determineFilter(vatsimdata);
+                                        fadeoutFirst();
+                                    }
+                                    function setDistanceTitle() {
+                                        $table.bootstrapTable('updateColumnTitle', {
+                                            field: 'dep_distance',
+                                            title: 'NM outound'
+                                        });
+                                        $table.bootstrapTable('updateColumnTitle', {
+                                            field: 'dest_distance',
+                                            title: 'NM inbound'
+                                        });
+                                    }
+                                    function getUrlParam(parameter, defaultvalue) {
+                                        var urlparameter = defaultvalue;
+                                        if (window.location.href.indexOf(parameter) > -1) {
+                                            urlparameter = getUrlVars()[parameter];
+                                        }
+                                        return urlparameter;
+                                    }
+                                    function getUrlVars() {
+                                        var vars = {};
+                                        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+                                            vars[key] = value;
+                                        });
+                                        return vars;
+                                    }
+                                    function determineFilter(d) {
+                                        if (currentMode === 'arr') {
+                                            filterDepartures(d);
+                                        } else {
+                                            filterArrivals(d);
+                                        }
+                                    }
+                                    function filterArrivals(d) {
+                                        stopfadeoutFirst();
+                                        currentMode = 'arr';
+                                        $table.bootstrapTable('hideColumn', 'dep_distance');
+                                        $table.bootstrapTable('showColumn', 'dest_distance');
+                                        $('#arr-icon').attr('src', 'resources/arr-icon-enable.png');
+                                        $('#dep-icon').attr('src', 'resources/dep-icon.png');
+                                        $('#table tbody').fadeOut(1000, function () {
+                                            $table.bootstrapTable('load', d);
+                                            $table.bootstrapTable(
+                                                    'filterBy', {planned_destairport: icao_url});
+                                        }).fadeIn(1000);
+                                    }
+                                    function filterDepartures(d) {
+                                        stopfadeoutFirst();
+                                        currentMode = 'dep';
+                                        $table.bootstrapTable('showColumn', 'dep_distance');
+                                        $table.bootstrapTable('hideColumn', 'dest_distance');
+                                        $('#arr-icon').attr('src', 'resources/arr-icon.png');
+                                        $('#dep-icon').attr('src', 'resources/dep-icon-enable.png');
+                                        $('#table tbody').fadeOut(1000, function () {
+                                            $table.bootstrapTable('load', d);
+                                            $table.bootstrapTable('filterBy', {
+                                                planned_depairport: icao_url
+                                            });
+                                        }).fadeIn(1000);
+                                    }
+                                    function updateCounters(d) {
+                                        $('#arrcount').text(arrivals);
+                                        $('#depcount').text(departures);
+                                    }
+                                    function prepareCounters(d) {
+                                        arrivals = d.filter(v => v.planned_destairport === icao_url).length;
+                                        departures = d.filter(v => v.planned_depairport === icao_url).length;
+                                    }
+                                    function fadeoutFirst() {
+                                        timerFadeout = setInterval(function () {
+                                            if ($('#table tbody tr').length <= 10) {
+                                                stopfadeoutFirst();
+                                            } else {
+                                                let row = $('#table tbody tr:first')
+                                                row.animate({opacity: 0}, 1000, function () {
+                                                    let col = row.find('td')
+                                                    col
+                                                            .wrapInner('<div style="display: block;" />')
+                                                            .parent()
+                                                            .find('td > div')
+                                                            .animate({
+                                                                height: 0
+                                                            }, 1000);
 
-                                    var time = h + ":" + m + ":" + s + " ";
-                                    document.getElementById("MyClockDisplay").innerText = time;
-                                    document.getElementById("MyClockDisplay").textContent = time;
+                                                    col.animate({
+                                                        padding: 0
+                                                    }, 1000, function () {
+                                                        row.remove();
+                                                    });
+                                                    $(this).slideUp(1000, function () {
+                                                        row.remove();
+                                                    });
+                                                });
+                                            }
+                                        }, 3500);
+                                    }
+                                    function stopfadeoutFirst() {
+                                        clearTimeout(timerFadeout);
+                                    }
+                                    function showTime() {
+                                        var date = new Date();
+                                        var offsetHours = date.getTimezoneOffset() / 60;
+                                        var h = date.getHours() + (offsetHours); // 0 - 23
+                                        var m = date.getMinutes(); // 0 - 59
+                                        var s = date.getSeconds(); // 0 - 59
+                                        h = (h < 0) ? 24 - h : h;
+                                        h = (h < 10) ? "0" + h : h;
+                                        m = (m < 10) ? "0" + m : m;
+                                        s = (s < 10) ? "0" + s : s;
 
-                                    setTimeout(showTime, 1000);
+                                        var time = h + ":" + m + ":" + s + " ";
+                                        document.getElementById("MyClockDisplay").innerText = time;
+                                        document.getElementById("MyClockDisplay").textContent = time;
 
-                                }
-                                $("#arr-icon").click(function () {
-                                    doLoop();
+                                        setTimeout(showTime, 1000);
+
+                                    }
+                                    $("#arr-icon").click(function () {
+                                        doLoop();
+                                    });
+                                    $("#dep-icon").click(function () {
+                                        doLoop();
+                                    });
                                 });
-                                $("#dep-icon").click(function () {
-                                    doLoop();
-                                });
-                            });
         </script>
     </body>
 </html>
