@@ -1,7 +1,4 @@
 <?php
-
-use GitWrapper\GitWrapper;
-
 require_once 'vendor/autoload.php';
 require_once 'utils.php';
 
