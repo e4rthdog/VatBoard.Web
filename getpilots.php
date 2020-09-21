@@ -1,7 +1,4 @@
 <?php
-
-use GitWrapper\GitWrapper;
-
 require_once 'vendor/autoload.php';
 require_once 'utils.php';
 
@@ -85,6 +82,7 @@ if ($vatsim->loadData()) {
     usort($departures, "sortByDistanceDep");
     $result = array_merge($arrivals, $departures);
     header('Content-Type: application/json');
+    header('Access-Control-Allow-Origin: *');
     echo json_encode(array_values(array_filter($result, "filterVAT")));
 } else {
     echo json_encode("Data could not be loaded");
